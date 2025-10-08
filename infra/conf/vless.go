@@ -15,6 +15,7 @@ import (
 	"github.com/xtls/xray-core/common/serial"
 	"github.com/xtls/xray-core/common/uuid"
 	"github.com/xtls/xray-core/proxy/vless"
+	"github.com/xtls/xray-core/proxy/vless/database"
 	"github.com/xtls/xray-core/proxy/vless/inbound"
 	"github.com/xtls/xray-core/proxy/vless/outbound"
 	"google.golang.org/protobuf/proto"
@@ -30,59 +31,97 @@ type VLessInboundFallback struct {
 }
 
 type VLessInboundConfig struct {
-	Clients    []json.RawMessage       `json:"clients"`
-	Decryption string                  `json:"decryption"`
-	Fallbacks  []*VLessInboundFallback `json:"fallbacks"`
-	Flow       string                  `json:"flow"`
+	Clients        []json.RawMessage       `json:"clients"`
+	ClientsStorage json.RawMessage         `json:"clientsStorage"`
+	Decryption     string                  `json:"decryption"`
+	Fallbacks      []*VLessInboundFallback `json:"fallbacks"`
+	Flow           string                  `json:"flow"`
 }
 
 // Build implements Buildable
 func (c *VLessInboundConfig) Build() (proto.Message, error) {
 	config := new(inbound.Config)
-	config.Clients = make([]*protocol.User, len(c.Clients))
-	switch c.Flow {
-	case vless.None:
-		c.Flow = ""
-	case "", vless.XRV:
-	default:
-		return nil, errors.New(`VLESS "settings.flow" doesn't support "` + c.Flow + `" in this version`)
-	}
-	for idx, rawUser := range c.Clients {
-		user := new(protocol.User)
-		if err := json.Unmarshal(rawUser, user); err != nil {
-			return nil, errors.New(`VLESS clients: invalid user`).Base(err)
-		}
-		account := new(vless.Account)
-		if err := json.Unmarshal(rawUser, account); err != nil {
-			return nil, errors.New(`VLESS clients: invalid user`).Base(err)
+
+	if len(c.ClientsStorage) > 0 {
+		var clientsStorage database.ClientsStorage
+		if err := json.Unmarshal(c.ClientsStorage, &clientsStorage); err != nil {
+			return nil, errors.New(`VLESS clientsStorage: invalid config`).Base(err)
 		}
 
-		u, err := uuid.ParseString(account.Id)
-		if err != nil {
-			return nil, err
+		if clientsStorage.Type == "" {
+			return nil, errors.New(`VLESS clientsStorage: "type" field is required`)
 		}
-		account.Id = u.String()
+		if clientsStorage.Settings == nil {
+			return nil, errors.New(`VLESS clientsStorage: "settings" field is required`)
+		}
+		if clientsStorage.Settings.ConnectionString == "" {
+			return nil, errors.New(`VLESS clientsStorage: "connectionString" field is required in settings`)
+		}
 
-		switch account.Flow {
-		case "":
-			account.Flow = c.Flow
+		if clientsStorage.Settings.Table == "" {
+			clientsStorage.Settings.Table = "vless_users"
+		}
+
+		if clientsStorage.Settings.Pool == 0 {
+			clientsStorage.Settings.Pool = 10
+		}
+
+		if clientsStorage.Settings.Cache != nil {
+			if clientsStorage.Settings.Cache.Ttl == 0 {
+				return nil, errors.New(`VLESS clientsStorage: "ttl" field is required in cache settings`)
+			}
+			if clientsStorage.Settings.Cache.MaxSize == 0 {
+				return nil, errors.New(`VLESS clientsStorage: "maxSize" field is required in cache settings`)
+			}
+		}
+
+		config.ClientsStorage = &clientsStorage
+	} else {
+		config.Clients = make([]*protocol.User, len(c.Clients))
+		switch c.Flow {
 		case vless.None:
-			account.Flow = ""
-		case vless.XRV:
+			c.Flow = ""
+		case "", vless.XRV:
 		default:
-			return nil, errors.New(`VLESS clients: "flow" doesn't support "` + account.Flow + `" in this version`)
+			return nil, errors.New(`VLESS "settings.flow" doesn't support "` + c.Flow + `" in this version`)
 		}
+		for idx, rawUser := range c.Clients {
+			user := new(protocol.User)
+			if err := json.Unmarshal(rawUser, user); err != nil {
+				return nil, errors.New(`VLESS clients: invalid user`).Base(err)
+			}
+			account := new(vless.Account)
+			if err := json.Unmarshal(rawUser, account); err != nil {
+				return nil, errors.New(`VLESS clients: invalid user`).Base(err)
+			}
 
-		if account.Encryption != "" {
-			return nil, errors.New(`VLESS clients: "encryption" should not be in inbound settings`)
+			u, err := uuid.ParseString(account.Id)
+			if err != nil {
+				return nil, err
+			}
+			account.Id = u.String()
+
+			switch account.Flow {
+			case "":
+				account.Flow = c.Flow
+			case vless.None:
+				account.Flow = ""
+			case vless.XRV:
+			default:
+				return nil, errors.New(`VLESS clients: "flow" doesn't support "` + account.Flow + `" in this version`)
+			}
+
+			if account.Encryption != "" {
+				return nil, errors.New(`VLESS clients: "encryption" should not be in inbound settings`)
+			}
+
+			if account.Reverse != nil && account.Reverse.Tag == "" {
+				return nil, errors.New(`VLESS clients: "tag" can't be empty for "reverse"`)
+			}
+
+			user.Account = serial.ToTypedMessage(account)
+			config.Clients[idx] = user
 		}
-
-		if account.Reverse != nil && account.Reverse.Tag == "" {
-			return nil, errors.New(`VLESS clients: "tag" can't be empty for "reverse"`)
-		}
-
-		user.Account = serial.ToTypedMessage(account)
-		config.Clients[idx] = user
 	}
 
 	config.Decryption = c.Decryption

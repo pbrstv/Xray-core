@@ -8,6 +8,7 @@ import (
 	"github.com/xtls/xray-core/common/serial"
 	. "github.com/xtls/xray-core/infra/conf"
 	"github.com/xtls/xray-core/proxy/vless"
+	"github.com/xtls/xray-core/proxy/vless/database"
 	"github.com/xtls/xray-core/proxy/vless/inbound"
 	"github.com/xtls/xray-core/proxy/vless/outbound"
 )
@@ -153,6 +154,40 @@ func TestVLessInbound(t *testing.T) {
 						Xver: 0,
 					},
 				},
+			},
+		},
+		{
+			Input: `{
+				"clientsStorage": {
+					"type": "postgres",
+					"settings": {
+						"connection_string": "postgres://user:password@localhost:5432/dbname",
+						"table": "vless_users",
+						"pool": 10,
+						"cache": {
+							"ttl": 300,
+							"max_size": 1000
+						}
+					}
+				},
+				"decryption": "none"
+			}`,
+			Parser: loadJSON(creator),
+			Output: &inbound.Config{
+				ClientsStorage: &database.ClientsStorage{
+					Type: "postgres",
+					Settings: &database.Settings{
+						ConnectionString: "postgres://user:password@localhost:5432/dbname",
+						Table: "vless_users",
+						Pool: 10,
+						Cache: &database.CacheSettings{
+							Ttl: 300,
+							MaxSize: 1000,
+						},
+					},
+				},
+				Decryption: "none",
+				Clients: []*protocol.User{},
 			},
 		},
 	})

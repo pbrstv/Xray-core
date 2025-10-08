@@ -5,6 +5,7 @@ import (
 	"context"
 	gotls "crypto/tls"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"reflect"
 	"strconv"
@@ -34,6 +35,7 @@ import (
 	"github.com/xtls/xray-core/features/routing"
 	"github.com/xtls/xray-core/proxy"
 	"github.com/xtls/xray-core/proxy/vless"
+	"github.com/xtls/xray-core/proxy/vless/database"
 	"github.com/xtls/xray-core/proxy/vless/encoding"
 	"github.com/xtls/xray-core/proxy/vless/encryption"
 	"github.com/xtls/xray-core/transport"
@@ -54,14 +56,28 @@ func init() {
 
 		c := config.(*Config)
 
-		validator := new(vless.MemoryValidator)
-		for _, user := range c.Clients {
-			u, err := user.ToMemoryUser()
+		var validator vless.Validator
+		if c.ClientsStorage != nil {
+			storage, err := database.NewSQLStorage(c.ClientsStorage)
 			if err != nil {
-				return nil, errors.New("failed to get VLESS user").Base(err).AtError()
+				return nil, err
 			}
-			if err := validator.Add(u); err != nil {
-				return nil, errors.New("failed to initiate user").Base(err).AtError()
+			cacheSettings := c.ClientsStorage.Settings.GetCache()
+			v, err := database.NewValidator(storage, cacheSettings)
+			if err != nil {
+				return nil, err
+			}
+			validator = v
+		} else {
+			validator = new(vless.MemoryValidator)
+			for _, user := range c.Clients {
+				u, err := user.ToMemoryUser()
+				if err != nil {
+					return nil, errors.New("failed to get VLESS user").Base(err).AtError()
+				}
+				if err := validator.Add(u); err != nil {
+					return nil, errors.New("failed to initiate user").Base(err).AtError()
+				}
 			}
 		}
 
