@@ -8,15 +8,15 @@ option java_package = "com.xray.proxy";
 option java_multiple_files = true;
 
 message CacheSettings {
-  int64 ttl = 1; // Время жизни кэша в секундах
-  int32 max_size = 2; // Максимальный размер кэша
+  int64 ttl = 1; 
+  int32 maxSize = 2; 
 }
 
 message Settings {
-  string connection_string = 1;
+  string dsn = 1 [json_name = "dsn"];
   string table = 2;
   int32 pool = 3;
-  CacheSettings cache = 4; // Настройки кэширования
+  CacheSettings cache = 4; 
 }
 
 message ClientsStorage {

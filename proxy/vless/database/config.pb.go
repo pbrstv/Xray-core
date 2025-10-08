@@ -23,8 +23,8 @@ const (
 
 type CacheSettings struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Ttl           int64                  `protobuf:"varint,1,opt,name=ttl,proto3" json:"ttl,omitempty"`                        // Время жизни кэша в секундах
-	MaxSize       int32                  `protobuf:"varint,2,opt,name=max_size,json=maxSize,proto3" json:"max_size,omitempty"` // Максимальный размер кэша
+	Ttl           int64                  `protobuf:"varint,1,opt,name=ttl,proto3" json:"ttl,omitempty"`         // Время жизни кэша в секундах
+	MaxSize       int32                  `protobuf:"varint,2,opt,name=maxSize,proto3" json:"maxSize,omitempty"` // Максимальный размер кэша
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -74,13 +74,13 @@ func (x *CacheSettings) GetMaxSize() int32 {
 }
 
 type Settings struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	ConnectionString string                 `protobuf:"bytes,1,opt,name=connection_string,json=connectionString,proto3" json:"connection_string,omitempty"`
-	Table            string                 `protobuf:"bytes,2,opt,name=table,proto3" json:"table,omitempty"`
-	Pool             int32                  `protobuf:"varint,3,opt,name=pool,proto3" json:"pool,omitempty"`
-	Cache            *CacheSettings         `protobuf:"bytes,4,opt,name=cache,proto3" json:"cache,omitempty"` // Настройки кэширования
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Dsn           string                 `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty"`
+	Table         string                 `protobuf:"bytes,2,opt,name=table,proto3" json:"table,omitempty"`
+	Pool          int32                  `protobuf:"varint,3,opt,name=pool,proto3" json:"pool,omitempty"`
+	Cache         *CacheSettings         `protobuf:"bytes,4,opt,name=cache,proto3" json:"cache,omitempty"` // Настройки кэширования
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Settings) Reset() {
@@ -113,9 +113,9 @@ func (*Settings) Descriptor() ([]byte, []int) {
 	return file_proxy_vless_database_config_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Settings) GetConnectionString() string {
+func (x *Settings) GetDsn() string {
 	if x != nil {
-		return x.ConnectionString
+		return x.Dsn
 	}
 	return ""
 }
@@ -198,12 +198,12 @@ var File_proxy_vless_database_config_proto protoreflect.FileDescriptor
 const file_proxy_vless_database_config_proto_rawDesc = "" +
 	"\n" +
 	"!proxy/vless/database/config.proto\x12\n" +
-	"xray.proxy\"<\n" +
+	"xray.proxy\";\n" +
 	"\rCacheSettings\x12\x10\n" +
-	"\x03ttl\x18\x01 \x01(\x03R\x03ttl\x12\x19\n" +
-	"\bmax_size\x18\x02 \x01(\x05R\amaxSize\"\x92\x01\n" +
-	"\bSettings\x12+\n" +
-	"\x11connection_string\x18\x01 \x01(\tR\x10connectionString\x12\x14\n" +
+	"\x03ttl\x18\x01 \x01(\x03R\x03ttl\x12\x18\n" +
+	"\amaxSize\x18\x02 \x01(\x05R\amaxSize\"w\n" +
+	"\bSettings\x12\x10\n" +
+	"\x03dsn\x18\x01 \x01(\tR\x03dsn\x12\x14\n" +
 	"\x05table\x18\x02 \x01(\tR\x05table\x12\x12\n" +
 	"\x04pool\x18\x03 \x01(\x05R\x04pool\x12/\n" +
 	"\x05cache\x18\x04 \x01(\v2\x19.xray.proxy.CacheSettingsR\x05cache\"V\n" +

@@ -18,7 +18,6 @@ type SQLStorage struct {
 	adapter   SQLDriver
 }
 
-// sqlUserModel - внутренняя модель для ORM Bun.
 type sqlUserModel struct {
 	bun.BaseModel `bun:"table:vless_users,alias:vu"`
 
@@ -29,7 +28,7 @@ type sqlUserModel struct {
 
 func NewSQLStorage(cs *ClientsStorage) (UserStorage, error) {
 	settings := cs.GetSettings()
-	dsn := settings.GetConnectionString()
+	dsn := settings.GetDsn()
 	tableName := settings.GetTable()
 	poolSize := int(settings.GetPool())
 

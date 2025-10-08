@@ -161,12 +161,12 @@ func TestVLessInbound(t *testing.T) {
 				"clientsStorage": {
 					"type": "postgres",
 					"settings": {
-						"connection_string": "postgres://user:password@localhost:5432/dbname",
+						"dsn": "postgres://user:password@localhost:5432/dbname",
 						"table": "vless_users",
 						"pool": 10,
 						"cache": {
 							"ttl": 300,
-							"max_size": 1000
+							"maxSize": 1000
 						}
 					}
 				},
@@ -177,17 +177,17 @@ func TestVLessInbound(t *testing.T) {
 				ClientsStorage: &database.ClientsStorage{
 					Type: "postgres",
 					Settings: &database.Settings{
-						ConnectionString: "postgres://user:password@localhost:5432/dbname",
+						Dsn:   "postgres://user:password@localhost:5432/dbname",
 						Table: "vless_users",
-						Pool: 10,
+						Pool:  10,
 						Cache: &database.CacheSettings{
-							Ttl: 300,
+							Ttl:     300,
 							MaxSize: 1000,
 						},
 					},
 				},
 				Decryption: "none",
-				Clients: []*protocol.User{},
+				Clients:    []*protocol.User{},
 			},
 		},
 	})
