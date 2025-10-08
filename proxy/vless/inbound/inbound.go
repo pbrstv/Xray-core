@@ -5,7 +5,6 @@ import (
 	"context"
 	gotls "crypto/tls"
 	"encoding/base64"
-	"fmt"
 	"io"
 	"reflect"
 	"strconv"
