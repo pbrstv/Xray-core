@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package xray.proxy;
+
+option csharp_namespace = "Xray.Proxy";
+option go_package = "github.com/xtls/xray-core/proxy/vless/database";
+option java_package = "com.xray.proxy";
+option java_multiple_files = true;
+
+message CacheSettings {
+  int64 ttl = 1; // Время жизни кэша в секундах
+  int32 max_size = 2; // Максимальный размер кэша
+}
+
+message Settings {
+  string connection_string = 1;
+  string table = 2;
+  int32 pool = 3;
+  CacheSettings cache = 4; // Настройки кэширования
+}
+
+message ClientsStorage {
+  string type = 1;
+  Settings settings = 2;
+}
