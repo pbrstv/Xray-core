@@ -23,11 +23,8 @@ func NewValidator(storage UserStorage, cacheSettings *CacheSettings) (*Validator
 	}
 
 	if cacheSettings != nil {
-		ttl := time.Hour
-		maxSize := int32(1000)
-
-		ttl = time.Duration(cacheSettings.GetTtl()) * time.Second
-		maxSize = cacheSettings.GetMaxSize()
+		ttl := time.Duration(cacheSettings.GetTtl()) * time.Second
+		maxSize := cacheSettings.GetMaxSize()
 
 		validator.cache = cache.NewCache(ttl, maxSize)
 	}
