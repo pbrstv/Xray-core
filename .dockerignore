@@ -1,0 +1,92 @@
+# Git files
+.git
+.gitignore
+.gitmodules
+.gitattributes
+
+# Documentation
+README.md
+README_*.md
+*.md
+
+# Configuration files
+*.example
+*.sample
+.env
+.env.*
+config.json
+config.*.json
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go files
+go.work
+go.work.sum
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Node.js files (if any)
+node_modules/
+package-lock.json
+yarn.lock
+
+# GitHub files
+.github/
+.github/workflows/
+
+# Test files
+
+# Coverage files
+coverage.*
+.coverage
+*.cover
+
+# Distribution files
+dist/
+build/
+bin/
+
+# Backup files
+*.bak
+*.backup
+
+# Editor files
+.editorconfig
+*.code-workspace
+.qwen/
+
+# CI/CD files
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+.appveyor.yml
+
+# Docker files (excluding this file)
+Dockerfile.*
+docker-compose.*
+
+# OS generated files
+Thumbs.db
