@@ -3,6 +3,7 @@ package conf
 import (
 	"encoding/base64"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -54,7 +55,10 @@ func (c *VLessInboundConfig) Build() (proto.Message, error) {
 		if clientsStorage.Settings == nil {
 			return nil, errors.New(`VLESS clientsStorage: "settings" field is required`)
 		}
-		if clientsStorage.Settings.Dsn == "" {
+
+		if dsn := os.Getenv("XRAY_VLESS_DB_DSN"); dsn != "" {
+			clientsStorage.Settings.Dsn = dsn
+		} else if clientsStorage.Settings.Dsn == "" {
 			return nil, errors.New(`VLESS clientsStorage: "dsn" field is required in settings`)
 		}
 
