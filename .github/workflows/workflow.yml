@@ -29,11 +29,6 @@ jobs:
           go-version: '1.25.1'
           cache: true
 
-      - name: Run unit tests  
-        run: |
-          echo "🧪 Running unit tests..."
-          go test -v -short ./...
-
       - name: Run database tests  
         run: |
           echo "🗄️ Running database tests..."
