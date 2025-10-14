@@ -11,4 +11,4 @@ RUN apk add --no-cache ca-certificates && \
     mkdir -p /etc/xray
 COPY --from=builder --chown=xray:xray /app/xray /usr/local/bin/xray
 USER xray
-CMD ["/app/xray", "-c", "/etc/xray/config.json"]
+CMD ["/usr/local/bin/xray", "-c", "/etc/xray/config.json"]
