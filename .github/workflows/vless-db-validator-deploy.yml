@@ -1,8 +1,8 @@
-name: Build and Push to GHCR  
+name: Build and Push to GHCR
 
 on:
   push:
-    branches: 
+    branches:
       - "vless-db-validator"
     tags:
       - 'v*.*.*'
@@ -14,60 +14,66 @@ env:
 jobs:
   test-build-push:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout repository code  
+      - name: Checkout repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up Go 1.25.1  
+      - name: Set up Go 1.25.1
         uses: actions/setup-go@v4
         with:
           go-version: '1.25.1'
           cache: true
 
-      - name: Run database tests  
+      - name: Run database tests
         run: |
           echo "🗄️ Running database tests..."
           go test -v ./proxy/vless/database/...
 
-      - name: Run cache tests  
+      - name: Run cache tests
         run: |
           echo "⚡ Running cache tests..."
           go test -v ./proxy/vless/database/cache/...
 
-      - name: Run validator tests  
+      - name: Run validator tests
         run: |
           echo "✅ Running validator tests..."
           go test -v ./proxy/vless/database/...
 
-      - name: Set up Docker Buildx  
+      - name: Get current tag
+        id: get_tag
+        run: |
+          CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
+          echo "CURRENT_TAG=$CURRENT_TAG" >> $GITHUB_ENV
+          echo "tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Container Registry  
+      - name: Login to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata  
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # Теги из названий веток (например, vless-db-validator)
-            type=ref,event=branch
-            # Семантические версии из git тегов (1.2.3 из v1.2.3)
+            type=raw,value=${{ steps.get_tag.outputs.tag }},enable=${{ steps.get_tag.outputs.tag != 'unknown' }}
             type=semver,pattern={{version}}
-            #_major_.minor_ из семантических версий (1.2 из v1.2.3)
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Build and push Docker image  
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
