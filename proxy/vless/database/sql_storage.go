@@ -14,7 +14,7 @@ import (
 // SQLStorage implements UserStorage for SQL databases.
 type SQLStorage struct {
 	db        *bun.DB
-	tableName string // Table name for queries
+	tableName string
 	adapter   SQLDriver
 }
 
@@ -55,10 +55,12 @@ func NewSQLStorage(cs *ClientsStorage) (UserStorage, error) {
 }
 
 func (s *SQLStorage) GetUserByID(ctx context.Context, id uuid.UUID) (*protocol.MemoryUser, error) {
+	errors.LogDebug(ctx, "Searching for user with UUID string: ", id.String(), " in table: ", s.tableName)
 	var model sqlUserModel
 	err := s.db.NewSelect().Model(&model).ModelTableExpr(s.tableName+" AS vu").Where("id = ?", id.String()).Scan(ctx)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			errors.LogDebug(ctx, "User with UUID ", id.String(), " not found in database (no rows returned)")
 			return nil, errors.New("user not found with ID: ", id.String()).AtDebug()
 		}
 
@@ -66,9 +68,11 @@ func (s *SQLStorage) GetUserByID(ctx context.Context, id uuid.UUID) (*protocol.M
 			return nil, errors.New("database connection error when getting user by ID: ", id.String()).Base(err).AtError()
 		}
 
+		errors.LogDebug(ctx, "Database query error when searching for user ", id.String(), ": ", err)
 		return nil, errors.New("database query error when getting user by ID: ", id.String()).Base(err).AtError()
 	}
 
+	errors.LogDebug(ctx, "User with UUID ", id.String(), " found in database")
 	return toMemoryUser(&model)
 }
 

@@ -57,6 +57,7 @@ func init() {
 
 		var validator vless.Validator
 		if c.ClientsStorage != nil {
+			errors.LogInfo(ctx, "Initializing VLESS with ClientsStorage")
 			storage, err := database.NewSQLStorage(c.ClientsStorage)
 			if err != nil {
 				return nil, err
@@ -66,8 +67,10 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
+			errors.LogInfo(ctx, "VLESS ClientsStorage initialized with cache: ", cacheSettings != nil)
 			validator = v
 		} else {
+			errors.LogInfo(ctx, "Initializing VLESS with MemoryValidator")
 			validator = new(vless.MemoryValidator)
 			for _, user := range c.Clients {
 				u, err := user.ToMemoryUser()
@@ -78,6 +81,7 @@ func init() {
 					return nil, errors.New("failed to initiate user").Base(err).AtError()
 				}
 			}
+			errors.LogInfo(ctx, "VLESS MemoryValidator initialized with ", len(c.Clients), " clients")
 		}
 
 		return New(ctx, c, dc, validator)

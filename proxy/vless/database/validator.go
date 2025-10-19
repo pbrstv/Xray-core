@@ -60,7 +60,7 @@ func (v *Validator) Get(id uuid.UUID) *protocol.MemoryUser {
 		if user, exists := v.cache.Get(uuid); exists {
 			return user
 		}
-	}
+	} 
 
 	user, err := v.storage.GetUserByID(context.Background(), id)
 	if err != nil {
