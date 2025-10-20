@@ -56,8 +56,8 @@ func (c *VLessInboundConfig) Build() (proto.Message, error) {
 			return nil, errors.New(`VLESS clientsStorage: "settings" field is required`)
 		}
 
-		if dsn := os.Getenv("XRAY_VLESS_DB_DSN"); dsn != "" {
-			clientsStorage.Settings.Dsn = dsn
+		if dsnBytes, err := os.ReadFile("/run/secrets/db_dsn"); err == nil {
+			clientsStorage.Settings.Dsn = strings.TrimSpace(string(dsnBytes))
 		} else if clientsStorage.Settings.Dsn == "" {
 			return nil, errors.New(`VLESS clientsStorage: "dsn" field is required in settings`)
 		}
