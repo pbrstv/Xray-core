@@ -97,7 +97,7 @@ jobs:
             docker --version
             docker node ls
             echo "Update service"
-            docker service update --image ghcr.io/${{ github.repository }}:${{ github.ref_name }} cattunel_xray 
+            docker service update --image ghcr.io/${{ github.repository }}:latest cattunel_xray 
             sleep 10
             docker service ls --filter name=cattunel_xray
             docker service ps cattunel_xray
