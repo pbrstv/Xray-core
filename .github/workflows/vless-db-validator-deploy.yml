@@ -74,3 +74,32 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  deploy:
+    name: Deploy to Docker Swarm
+    needs: test-build-push  
+    runs-on: ubuntu-latest
+    environment: 
+      name: production  
+    permissions:
+      contents: read
+      deployments: write
+    
+    steps:
+      - name: Deploy to Docker Swarm
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SWARM_HOST }}
+          port: ${{ secrets.SWARM_PORT || 22 }}
+          username: ${{ secrets.SWARM_USER }}
+          key: ${{ secrets.SWARM_PRIVATE_KEY }}
+          timeout: 60s
+          script: |
+            docker --version
+            docker node ls
+            echo "Update service"
+            docker service update --image ghcr.io/${{ github.repository }}:${{ github.ref_name }} cattunel_xray 
+            sleep 10
+            docker service ls --filter name=cattunel_xray
+            docker service ps cattunel_xray
+            docker service logs cattunel_xray --tail 20
+
