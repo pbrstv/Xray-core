@@ -98,8 +98,5 @@ jobs:
             docker node ls
             echo "Update service"
             docker service update --image ghcr.io/pbrstv/xray-core:latest cattunel_xray 
-            sleep 10
-            docker service ls --filter name=cattunel_xray
             docker service ps cattunel_xray
-            docker service logs cattunel_xray --tail 20
 
